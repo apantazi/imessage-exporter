@@ -1,102 +1,90 @@
-# How-To-Use
+# How-To-Use (Windows)
 
-This guide explains in plain English how to prepare your computer, obtain your iMessage data, and run **imessage-exporter**. It is written for macOS users but also notes what to do for iOS backups.
+This guide explains in very plain English how to prepare a Windows PC, find your iMessage data, and run **imessage-exporter**. Each step shows how to check if something is already installed before installing it.
 
 ## 1. Prepare the computer
 
-1. **Install Rust (recommended way)**
-   - Visit [https://rustup.rs](https://rustup.rs) and follow the on-screen instructions to install Rust.
-   - This installs the `cargo` command which allows you to install `imessage-exporter`.
-2. **Give Terminal full disk access**
-   - Open **System Settings > Privacy & Security > Full Disk Access**.
-   - Add your terminal application (for example, Terminal, iTerm, or another shell) and enable the switch.
-   - This permission is required so `imessage-exporter` can read the Messages database.
-3. **(Optional) Install extra tools**
-   - For converting media you may want **ffmpeg** and **ImageMagick**. These can be installed with Homebrew:
-     ```bash
-     brew install ffmpeg imagemagick
-     ```
-   - They are only needed if you want attachments converted to common formats.
+1. **Check if Rust is installed**
+   - Open **Command Prompt** or **PowerShell**.
+   - Type `rustc --version` and press Enter.
+   - If you see a version number, Rust is already installed and you can skip the install step.
+2. **Install Rust if needed**
+   - Go to [https://rustup.rs](https://rustup.rs) in your web browser.
+   - Download and run the installer. Accept the defaults.
+   - Close the installer and open a new command window.
+   - Type `cargo --version` to make sure the install worked. This also installs `cargo` which is needed below.
+3. **(Optional) Check for media tools**
+   - Type `ffmpeg -version`. If the command is not found, you can download **ffmpeg** from [https://ffmpeg.org](https://ffmpeg.org).
+   - Type `magick -version`. If the command is not found, you can download **ImageMagick** from [https://imagemagick.org](https://imagemagick.org).
+   - These tools are only required if you want attachments converted to common formats.
 
 ## 2. Get the messages database
 
-There are two possible sources of data:
-
-### macOS database
-
-1. The Messages database is stored at `~/Library/Messages/chat.db` and attachments are under `~/Library/Messages/Attachments`.
-2. Nothing else is required if the messages you want are already on your Mac.
+Most Windows users will use an iOS backup. You may also copy a `chat.db` file from a Mac.
 
 ### iOS backup
 
-1. Connect your iPhone or iPad to the computer.
-2. In Finder (or iTunes on Windows), create a **local backup** of the device.
-3. If you choose **Encrypt local backup**, remember the password. You will need it later when running `imessage-exporter`.
-4. The backup directory will appear under `~/Library/Application Support/MobileSync/Backup/` (macOS) or under your user profile on Windows.
+1. Install or open **iTunes** on your PC.
+2. Connect your iPhone or iPad and create a **local backup**.
+3. If you choose **Encrypt local backup**, remember the password. You will need it when running `imessage-exporter`.
+4. The backup folder is stored under `%APPDATA%\Apple Computer\MobileSync\Backup\`. Inside it is a folder with a long name. That path is the one you pass to the program.
+
+### macOS database copy
+
+1. If you have access to a Mac, copy the `chat.db` file and the `Attachments` folder from `~/Library/Messages/` to your Windows computer.
+2. Note the location of these files on Windows so you can pass the paths when running the exporter.
 
 ## 3. Install the program
 
-The easiest method is via **cargo**:
-
-```bash
-cargo install imessage-exporter
-```
-
-This downloads and compiles the program. After it finishes you will have an `imessage-exporter` executable in `~/.cargo/bin/`.
-
-If you prefer Homebrew you can run:
-
-```bash
-brew install imessage-exporter
-```
-
-Homebrew may lag behind the latest release but it does not require Rust.
-
-Prebuilt binaries are also available on the project’s releases page if you wish to download one directly.
+1. **Check if imessage-exporter is already installed**
+   - Type `imessage-exporter --version`.
+   - If a version number prints, you can skip installation.
+2. **Install using cargo**
+   - Run `cargo install imessage-exporter` in a command window.
+   - The program will be placed in `C:\Users\<you>\.cargo\bin\` as `imessage-exporter.exe`.
+3. **Alternatively download a release**
+   - Visit the project’s releases page and download the Windows zip file.
+   - Unzip it anywhere you like and use the contained `imessage-exporter.exe`.
 
 ## 4. Run imessage-exporter
 
 Basic syntax:
 
-```bash
+```cmd
 imessage-exporter -f <txt|html> [options]
 ```
 
 Common options:
 
 - `-c <clone|basic|full|disabled>` – how to handle attachments.
-  - `clone` copies files without converting.
-  - `basic` also converts HEIC pictures to JPEG.
-  - `full` converts HEIC, CAF and MOV files to common formats.
-  - `disabled` does not copy attachments. This is the default.
-- `-p <path>` – location of `chat.db` or of an iOS backup.
-- `-o <path>` – folder where the export will be written (defaults to `~/imessage_export`).
-- `-s <YYYY-MM-DD>` and `-e <YYYY-MM-DD>` – start and end dates for filtering messages.
+- `-p <path>` – location of `chat.db` or the iOS backup.
+- `-o <path>` – folder where the export will be written (defaults to `imessage_export` in your user directory).
+- `-s <YYYY-MM-DD>` and `-e <YYYY-MM-DD>` – start and end dates to filter messages.
 - `-x <password>` – password for an encrypted iOS backup.
 
 ### Examples
 
-1. **Export everything from your Mac as HTML and convert attachments**
-   ```bash
-   imessage-exporter -f html -c full
+1. **Export from an iOS backup with attachments converted**
+   ```cmd
+   imessage-exporter -f html -c full -p "%APPDATA%\Apple Computer\MobileSync\Backup\<backup_id>" -x <password>
    ```
-2. **Export from a specific iOS backup with a password**
-   ```bash
-   imessage-exporter -f txt -p ~/Library/Application\ Support/MobileSync/Backup/<backup_id> -a iOS -x <password>
+2. **Export from a copied Mac database**
+   ```cmd
+   imessage-exporter -f txt -p "C:\path\to\chat.db" -o "C:\path\to\export"
    ```
 3. **Only export messages from 2020**
-   ```bash
-   imessage-exporter -f txt -s 2020-01-01 -e 2021-01-01
+   ```cmd
+   imessage-exporter -f txt -s 2020-01-01 -e 2021-01-01 -p "%APPDATA%\Apple Computer\MobileSync\Backup\<backup_id>"
    ```
 
-Running the command will print progress information. When finished your chosen export directory will contain one file per conversation (for example `Chat with Steve.html`). Attachments will be placed under an `Attachments/` folder if copying was enabled.
+Running the command will print progress information. When finished, your export directory will contain one file per conversation. Attachments will be placed in an `Attachments` folder if copying was enabled.
 
 ## 5. Diagnostics mode
 
-If you simply want to inspect the health of the database, run:
+To check the health of your database, run:
 
-```bash
-imessage-exporter -d
+```cmd
+imessage-exporter -d -p "%APPDATA%\Apple Computer\MobileSync\Backup\<backup_id>"
 ```
 
 This prints information such as missing attachments or duplicated contacts and then exits.
@@ -104,7 +92,7 @@ This prints information such as missing attachments or duplicated contacts and t
 ## 6. Viewing the export
 
 - Text exports are plain `.txt` files you can open in any text editor.
-- HTML exports can be opened in a web browser. If you did **not** copy attachments you may need to give the browser full disk access so it can read files from `~/Library`.
-- To customize the appearance of HTML exports, create a file named `style.css` in the export directory. Any rules you put in that file override the defaults.
+- HTML exports can be opened in any web browser.
+- To customize how HTML exports look, create a file called `style.css` in the export folder and add your own CSS rules.
 
-That’s it! Following these steps will create a readable archive of your iMessage history.
+That’s it! Following these steps on Windows will create a readable archive of your iMessage history.
